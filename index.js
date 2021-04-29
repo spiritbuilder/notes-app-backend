@@ -1,11 +1,13 @@
 const express = require('express');
 const app   = express();
 const cors  = require('cors');
-const pool= require('./db')
+const pool = require("./db");
+PORT = process.env.PORT || 5000;
 
 //middle ware
 app.use(cors());
 app.use(express.json());
+
 //Routes
 app.get('/', (req, res)=>{
 res.status(200).send("welcome to notes app");
@@ -13,9 +15,14 @@ res.status(200).send("welcome to notes app");
 //create a note
 app.post("/notes", async(req, res)=>{
     try{
-            const note  = await pool.query('insert into notes()')
+        const { title, description, created_by, notetype } = req.body;
+        const note = await pool.query(
+          "INSERT INTO notes (title, description, created, last_updated, created_by, notetype) VALUES ( $1,$2,now(),now(), $3, $4 ) returning*;",
+          [title, description, created_by, notetype]
+        );
+        res.status(200).json({ message: "new note added", note: note });
     }catch(err){
-            console.log(err)
+             res.json(err);
     }
 
 })
@@ -42,6 +49,6 @@ try {
 })
 
 
-app.listen(5000, ()=>{
-    console.log("there is life going on");
-})
+app.listen(PORT, () => {
+  console.log("there is life going on");
+});
