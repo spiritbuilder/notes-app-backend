@@ -74,7 +74,11 @@ app.put("/notes/:id", async (req, res) => {
 app.delete('/notes/:id', async(req,res)=>{
     try {
         const id = req.params.id;
-    const note  = pool.query('delete * from notes where note_id  = id');
+    const note = pool.query(
+      "delete from notes where note_id  = $1 RETURNING *;",
+      [id]
+    );
+    res.json(note);
     } catch (error) {
         res.json(error);
         console.log(error);
