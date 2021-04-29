@@ -38,16 +38,50 @@ app.get("/notes", async(req,res)=>{
 })
 
 //get specific note
-app.get('/notes/:id', async(req, res)=>{
-try {
-    const id = req.params.id
-    const note = await pool.query('select * from notes where note_id =$1;',[id]);
-    res.json(note.rows.length !=0?note.rows :{message:"no note with the supplied id"})
-} catch (error) {
-    console.log(error)
-}
-})
+app.get("/notes/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const note = await pool.query("select * from notes where note_id =$1;", [
+      id,
+    ]);
+    res.json(
+      note.rows.length != 0
+        ? note.rows
+        : { message: "no note with the supplied id" }
+    );
+  } catch (error) {
+    res.json(error);
+    console.log(error);
+  }
+});
+//modify note
+app.put("/notes/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, notetype } = req.body;
+    const note = await pool.query(
+      "update notes set title=$1, description=$2, notetype=$3, last_updated = now() where note_id = $4 returning* ;",
+      [title, description, notetype, id]
+    );
+    note.rows.length!=0?res.json(note.rows):res.json({message:"note not found"});
+  } catch (error) {
+    res.json(error);
+    console.log(error);
+  }
+});
 
+// delete note
+app.delete('/notes/:id', async(req,res)=>{
+    try {
+        const id = req.params.id;
+    const note  = pool.query('delete * from notes where note_id  = id');
+    } catch (error) {
+        res.json(error);
+        console.log(error);
+    }
+    
+
+})
 
 app.listen(PORT, () => {
   console.log("there is life going on");
