@@ -20,7 +20,7 @@ app.post("/notes", async(req, res)=>{
           "INSERT INTO notes (title, description, created, last_updated, created_by, notetype) VALUES ( $1,$2,now(),now(), $3, $4 ) returning*;",
           [title, description, created_by, notetype]
         );
-        res.status(200).json({ message: "new note added", note: note });
+        res.status(200).json({ message: "new note added", note: note.rows });
     }catch(err){
              res.json(err);
     }
@@ -30,7 +30,7 @@ app.post("/notes", async(req, res)=>{
 app.get("/notes", async(req,res)=>{
     try {
         const allnotes = await pool.query('select * from notes');
-    res.json(allnotes)
+    res.json(allnotes.rows)
     } catch (error) {
         console.log(error.message)
     }
@@ -40,9 +40,9 @@ app.get("/notes", async(req,res)=>{
 //get specific note
 app.get('/notes/:id', async(req, res)=>{
 try {
-    const id = req.params
-    const note = await pool.query('select * from notes where id =$1',[id]);
-    res.json(note)
+    const id = req.params.id
+    const note = await pool.query('select * from notes where note_id =$1;',[id]);
+    res.json(note.rows.length !=0?note.rows :{message:"no note with the supplied id"})
 } catch (error) {
     console.log(error)
 }
